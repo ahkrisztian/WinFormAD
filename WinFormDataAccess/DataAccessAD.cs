@@ -18,7 +18,6 @@ namespace WinFormDataAccess
 
                 ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
 
-                //DirectoryEntry deUser = new DirectoryEntry($"LDAP://cn={serverTextbox.Text},cn=Users,dc={serverTextbox.Text},dc=de");
 
                 if (ldapConnection is not null)
                 {

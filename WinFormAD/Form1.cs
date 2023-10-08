@@ -1,67 +1,49 @@
 using System.DirectoryServices;
 using WinFormDataAccess;
+using WinFormDataAccess.Querys;
 
 namespace WinFormAD
 {
     public partial class Form1 : Form
     {
+        private DirectoryEntry direntry;
         public Form1()
         {
             InitializeComponent();
 
         }
 
-        public void button1_Click(object sender, EventArgs e)
+        public async void button1_Click(object sender, EventArgs e)
         {
+            ISearchUserAD search = new SearchUserAD();
 
-            try
+            string result = await search.QueryUserAD(direntry, searchTextbox.Text);
+
+            if(result != null)
             {
-                DirectoryEntry ldapConnection = new DirectoryEntry(serverTextbox.Text, nameTextbox.Text, passwordTextbox.Text);
-
-                //DirectoryEntry deUser = new DirectoryEntry($"LDAP://cn={serverTextbox.Text},cn=Users,dc={serverTextbox.Text},dc=de");
-
-                if (ldapConnection != null)
-                {
-                    ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
-
-                    DirectorySearcher search = new DirectorySearcher(ldapConnection);
-
-                    search.Filter = "(cn=" + searchTextbox.Text + ")";
-
-                    SearchResult result = search.FindOne();
-
-                    if (result is not null)
-                    {
-                        string displayName = result.Properties["displayName"][0].ToString();
-
-                        resultTextbox.Text = displayName;
-                    }
-                    else
-                    {
-                        resultTextbox.Text = "User does not exists";
-                    }
-                }
+                resultTextbox.Text = result;
             }
-            catch (Exception)
+            else
             {
-                resultTextbox.Text = "Error";
+                resultTextbox.Text = "No result";
             }
-
-
         }
 
         private async void connectToADButton_Click(object sender, EventArgs e)
         {
-            IDataAccessAD dataAccessAD = new DataAccessAD();
+            IDataAccessAD dataAccess = new DataAccessAD();
 
-            var result = await dataAccessAD.ConnectToAD(serverTextbox.Text, nameTextbox.Text, passwordTextbox.Text);
+            var result = await dataAccess.ConnectToAD("LDAP://192.168.178.75", "SERVER2022\\Administrator", passwordTextbox.Text);
 
             if (result is not null)
             {
                 connectedCheckBox.Checked = true;
             }
-
-            MessageBox.Show("Error");
+            else
+            {
+                MessageBox.Show("Connection Error");
+            }
+            
         }
 
         private void connectedCheckBox_CheckedChanged_1(object sender, EventArgs e)

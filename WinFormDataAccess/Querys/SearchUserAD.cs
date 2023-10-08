@@ -7,46 +7,32 @@ using System.Threading.Tasks;
 
 namespace WinFormDataAccess.Querys
 {
-    public class SearchUserAD
+    public class SearchUserAD : ISearchUserAD
     {
-        private readonly IDataAccessAD dataAccess;
-
-        public SearchUserAD(IDataAccessAD dataAccess)
+        public async Task<string> QueryUserAD(DirectoryEntry direntry, string queryusername)
         {
-            this.dataAccess = dataAccess;
-        }
-
-        public async Task<string> QueryUserAD(string path, string user, string password, string queryusername)
-        {
+            
             try
             {
-                DirectoryEntry directoryEntry = await dataAccess.ConnectToAD(path, user, password);
+                DirectorySearcher search = new DirectorySearcher(direntry);
 
-                if (directoryEntry is not null)
+                search.Filter = $"(samaccountname={queryusername})";
+
+                SearchResult result = search.FindOne();
+
+                if (result is not null)
                 {
-                    DirectorySearcher search = new DirectorySearcher(directoryEntry);
+                    string displayName = result.Properties["displayName"][0].ToString();
 
-                    search.Filter = "(cn=" + queryusername + ")";
-
-                    SearchResult result = search.FindOne();
-
-                    if (result is not null)
-                    {
-                        string displayName = result.Properties["displayName"][0].ToString();
-
-                        return displayName;
-                    }
-                    else
-                    {
-                        return "User does not exists";
-                    }
+                    return displayName;
                 }
-
-                return String.Empty;
+                else
+                {
+                    return "User does not exists";
+                }
             }
             catch (Exception ex)
             {
-
                 throw new NullReferenceException(ex.Message);
             }
         }
