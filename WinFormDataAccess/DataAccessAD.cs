@@ -1,35 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.DirectoryServices;
-using System.Threading.Tasks;
-using System.Diagnostics.Tracing;
+﻿using System.DirectoryServices;
+using System.Runtime.Versioning;
+using Microsoft.Extensions.Configuration;
 
-namespace WinFormDataAccess
+namespace WinFormDataAccess;
+
+[SupportedOSPlatform("windows")]
+public class DataAccessAD : IDataAccessAD
 {
-    public class DataAccessAD : IDataAccessAD
+    private readonly IConfiguration configuration;
+
+    public DataAccessAD(IConfiguration configuration)
     {
-        public async Task<DirectoryEntry> ConnectToAD(string path, string username, string password)
+        this.configuration = configuration;
+    }
+
+    public DirectoryEntry ConnectToAD(string password)
+    {
+        var server = configuration["ActiveDirectory:Server"];
+        var username = configuration["ActiveDirectory:Username"];
+
+        try
         {
-            try
+            DirectoryEntry ldapConnection = new DirectoryEntry(server, username, password);
+
+            ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+
+            if (ldapConnection is not null)
             {
-                DirectoryEntry ldapConnection = new DirectoryEntry(path, username, password);
-
-                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
-
-
-                if (ldapConnection is not null)
-                {
-                    return ldapConnection;
-                }
-
-                return null;
+                return ldapConnection;
             }
-            catch (Exception ex)
-            {
-                return null;
-            }
+
+            throw new InvalidOperationException("Can not connect to DirectoryEntry");
+        }
+        catch (Exception)
+        {
+            throw new InvalidOperationException();
         }
     }
 }

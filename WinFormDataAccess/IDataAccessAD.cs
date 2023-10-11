@@ -4,6 +4,6 @@ namespace WinFormDataAccess
 {
     public interface IDataAccessAD
     {
-        Task<DirectoryEntry> ConnectToAD(string path, string username, string password);
+        DirectoryEntry ConnectToAD(string password);
     }
 }

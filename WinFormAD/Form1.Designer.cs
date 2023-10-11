@@ -37,6 +37,8 @@
             connectToADButton = new Button();
             connectedCheckBox = new CheckBox();
             searchGroupBox = new GroupBox();
+            updateNaverExpCheckBox = new CheckBox();
+            updateNExtLoginCheckBox1 = new CheckBox();
             searchGroupBox.SuspendLayout();
             SuspendLayout();
             // 
@@ -48,7 +50,7 @@
             searchButton.TabIndex = 0;
             searchButton.Text = "Search";
             searchButton.UseVisualStyleBackColor = true;
-            searchButton.Click += button1_Click;
+            searchButton.Click += searchButton_Click;
             // 
             // resultTextbox
             // 
@@ -59,6 +61,7 @@
             // 
             // nameTextbox
             // 
+            nameTextbox.Enabled = false;
             nameTextbox.Location = new Point(8, 41);
             nameTextbox.Name = "nameTextbox";
             nameTextbox.Size = new Size(425, 23);
@@ -81,6 +84,7 @@
             // 
             // serverTextbox
             // 
+            serverTextbox.Enabled = false;
             serverTextbox.Location = new Point(8, 12);
             serverTextbox.Name = "serverTextbox";
             serverTextbox.Size = new Size(425, 23);
@@ -122,11 +126,35 @@
             searchGroupBox.Text = "Search User";
             searchGroupBox.Visible = false;
             // 
+            // updateNaverExpCheckBox
+            // 
+            updateNaverExpCheckBox.AutoSize = true;
+            updateNaverExpCheckBox.Location = new Point(137, 404);
+            updateNaverExpCheckBox.Name = "updateNaverExpCheckBox";
+            updateNaverExpCheckBox.Size = new Size(191, 19);
+            updateNaverExpCheckBox.TabIndex = 9;
+            updateNaverExpCheckBox.Text = "Update Password Never Expires";
+            updateNaverExpCheckBox.UseVisualStyleBackColor = true;
+            updateNaverExpCheckBox.CheckedChanged += updateNaverExpCheckBox_CheckedChanged;
+            // 
+            // updateNExtLoginCheckBox1
+            // 
+            updateNExtLoginCheckBox1.AutoSize = true;
+            updateNExtLoginCheckBox1.Location = new Point(430, 404);
+            updateNExtLoginCheckBox1.Name = "updateNExtLoginCheckBox1";
+            updateNExtLoginCheckBox1.Size = new Size(216, 19);
+            updateNExtLoginCheckBox1.TabIndex = 10;
+            updateNExtLoginCheckBox1.Text = "Update Password Next Login Renew";
+            updateNExtLoginCheckBox1.UseVisualStyleBackColor = true;
+            updateNExtLoginCheckBox1.CheckedChanged += updateNExtLoginCheckBox1_CheckedChanged;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(updateNExtLoginCheckBox1);
+            Controls.Add(updateNaverExpCheckBox);
             Controls.Add(searchGroupBox);
             Controls.Add(connectedCheckBox);
             Controls.Add(connectToADButton);
@@ -152,5 +180,7 @@
         private Button connectToADButton;
         private CheckBox connectedCheckBox;
         private GroupBox searchGroupBox;
+        private CheckBox updateNaverExpCheckBox;
+        private CheckBox updateNExtLoginCheckBox1;
     }
 }

@@ -1,17 +1,51 @@
-namespace WinFormAD
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using System.Runtime.Versioning;
+using WinFormDataAccess;
+using WinFormDataAccess.Querys;
+
+namespace WinFormAD;
+
+[SupportedOSPlatform("windows")]
+internal static class Program
 {
-    internal static class Program
+    /// <summary>
+    ///  The main entry point for the application.
+    /// </summary>
+    [STAThread]
+    static void Main()
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
-            ApplicationConfiguration.Initialize();
-            Application.Run(new Form1());
-        }
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+
+        // Build configuration
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+            .AddJsonFile("C:\\Users\\Krisztian\\source\\repos\\WinFormAD\\WinFormAD\\appsettings.json")
+            .Build();
+
+        // Create a service collection
+        var services = new ServiceCollection();
+
+        services.AddSingleton<IConfiguration>(configuration);
+
+        // Register your services
+        services.AddSingleton<IPrincipialContextDataAccess, PrincipialContextDataAccess>();
+        services.AddSingleton<IDataAccessAD, DataAccessAD>();
+        
+
+        services.AddScoped<IEditUserPassword, EditUserPassword>();
+        services.AddScoped<ISearchUserAD, SearchUserAD>();
+
+        services.AddTransient<Form1>();
+
+        // Build the service provider
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Resolve the main form and pass the service provider to it
+        var mainForm = serviceProvider.GetRequiredService<Form1>();
+
+        Application.Run(mainForm);
+
     }
 }

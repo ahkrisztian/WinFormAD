@@ -1,40 +1,52 @@
-﻿using System;
-using System.Collections.Generic;
-using System.DirectoryServices;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.DirectoryServices;
+using System.Runtime.Versioning;
+using WindiwsFormAdModels.UserModels;
 
-namespace WinFormDataAccess.Querys
+namespace WinFormDataAccess.Querys;
+
+[SupportedOSPlatform("windows")]
+public class SearchUserAD : ISearchUserAD
 {
-    public class SearchUserAD : ISearchUserAD
+    public string QueryUserAD(DirectoryEntry direntry, string queryusername)
     {
-        public async Task<string> QueryUserAD(DirectoryEntry direntry, string queryusername)
+        
+        try
         {
-            
-            try
+            DirectorySearcher search = new DirectorySearcher(direntry);
+
+            search.Filter = $"(samaccountname={queryusername})";
+
+            SearchResult? result = search.FindOne();
+
+            if (result is not null)
             {
-                DirectorySearcher search = new DirectorySearcher(direntry);
+                string? displayName = result.Properties["displayName"][0].ToString();
 
-                search.Filter = $"(samaccountname={queryusername})";
+                //var user = new UserAD();
 
-                SearchResult result = search.FindOne();
+                //user.UserName = result.Properties["samaccountname"][0]?.ToString();
+                //user.DisplayName = result.Properties["displayname"][0]?.ToString();
+                //user.Email = result.Properties["mail"][0]?.ToString();
 
-                if (result is not null)
+                if (displayName is not null)
                 {
-                    string displayName = result.Properties["displayName"][0].ToString();
-
                     return displayName;
                 }
                 else
                 {
-                    return "User does not exists";
+                    return String.Empty;
                 }
             }
-            catch (Exception ex)
+            else
             {
-                throw new NullReferenceException(ex.Message);
+                return "User does not exists";
             }
         }
+        catch (Exception ex)
+        {
+            throw new NullReferenceException(ex.Message);
+        }
     }
+
+    
 }
