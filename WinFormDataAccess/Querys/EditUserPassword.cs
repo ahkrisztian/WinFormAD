@@ -43,34 +43,37 @@ public class EditUserPassword : IEditUserPassword
             DirectoryEntry userDistinguishedName = userDistingushedName(direntry, queryusername);
 
             // Get the current value of pwdLastSet
-            object pwdLastSet = userDistinguishedName.Properties["pwdLastSet"].Value;
-
-
-            // Check if pwdLastSet is 0, which means the user must change their password at next login
-            if (pwdLastSet != null)
+            if(userDistinguishedName != null)
             {
-                // Use reflection to access the values
-                var comType = pwdLastSet.GetType();
+                object pwdLastSet = userDistinguishedName.Properties["pwdLastSet"].Value;
 
-                int highPart = (int)comType.InvokeMember("HighPart", System.Reflection.BindingFlags.GetProperty, null, pwdLastSet, null);
-                int lowPart = (int)comType.InvokeMember("LowPart", System.Reflection.BindingFlags.GetProperty, null, pwdLastSet, null);
-
-                long pwdLastSetresult = ((long)highPart << 32) | (uint)lowPart;
-
-                // Check if pwdLastSet is 0, which means the user must change their password at next login
-                if (pwdLastSetresult == 0)
+                if (pwdLastSet != null)
                 {
-                    return true;
+                    // Use reflection to access the values
+                    var comType = pwdLastSet.GetType();
+
+                    int highPart = (int)comType.InvokeMember("HighPart", System.Reflection.BindingFlags.GetProperty, null, pwdLastSet, null);
+                    int lowPart = (int)comType.InvokeMember("LowPart", System.Reflection.BindingFlags.GetProperty, null, pwdLastSet, null);
+
+                    long pwdLastSetresult = ((long)highPart << 32) | (uint)lowPart;
+
+                    // Check if pwdLastSet is 0, which means the user must change their password at next login
+                    if (pwdLastSetresult == 0)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
                     return false;
                 }
             }
-            else
-            {
-                return false;
-            }
+            else { return false; }
+        
         }
         catch (Exception ex)
         {
@@ -113,7 +116,7 @@ public class EditUserPassword : IEditUserPassword
         }
         catch (Exception)
         {
-
+            return "No result";
             throw;
         }
     }
@@ -179,7 +182,7 @@ public class EditUserPassword : IEditUserPassword
         }
         catch (Exception)
         {
-
+            return "No result";
             throw;
         }
     }
@@ -221,7 +224,7 @@ public class EditUserPassword : IEditUserPassword
         }
         catch (Exception)
         {
-
+            return null;
             throw;
         }
     }

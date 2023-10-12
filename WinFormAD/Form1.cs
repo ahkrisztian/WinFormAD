@@ -17,36 +17,47 @@ namespace WinFormAD
         private readonly IDataAccessAD dataAccessAD;
         private readonly ISearchUserAD searchUserAD;
         private readonly IEditUserPassword editUserPassword;
+        private readonly ISearchOU searchOU;
 
-        public Form1(IDataAccessAD dataAccessAD, 
-                     ISearchUserAD searchUserAD, 
-                     IEditUserPassword editUserPassword)
+        public Form1(IDataAccessAD dataAccessAD,
+                     ISearchUserAD searchUserAD,
+                     IEditUserPassword editUserPassword, ISearchOU searchOU)
         {
             this.dataAccessAD = dataAccessAD;
             this.searchUserAD = searchUserAD;
             this.editUserPassword = editUserPassword;
-
+            this.searchOU = searchOU;
             InitializeComponent();
 
             updateNaverExpCheckBox.Click -= updateNaverExpCheckBox_CheckedChanged;
             updateNExtLoginCheckBox1.Click -= updateNExtLoginCheckBox1_CheckedChanged;
-         
+
         }
 
         public void searchButton_Click(object sender, EventArgs e)
         {
-            string result = searchUserAD.QueryUserAD(direntry, searchTextbox.Text);
-
-            if (result != null)
+            try
             {
-                resultTextbox.Text = result;
+                string result = searchUserAD.QueryUserAD(direntry, searchTextbox.Text);
 
-                checkPasswordStatus();
+                if (result != "User does not exists")
+                {
+                    resultTextbox.Text = result;
 
+                    checkPasswordStatus();
+
+                    passwordGroupBox.Visible = true;
+
+                }
+                else
+                {
+                    resultTextbox.Text = "No result";
+                    passwordGroupBox.Visible = false;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                resultTextbox.Text = "No result";
+                MessageBox.Show(ex.Message);
             }
         }
 
@@ -56,10 +67,29 @@ namespace WinFormAD
             {
                 var result = dataAccessAD.ConnectToAD(passwordTextbox.Text);
 
-                if (result is not null)
+                if (result.NativeGuid is not null)
                 {
                     direntry = result;
+
                     connectedCheckBox.Checked = true;
+                    passwordTextbox.Enabled = false;
+                    serverTextbox.Enabled = false;
+                    nameTextbox.Enabled = false;
+                    connectedCheckBox.Enabled = false;
+
+                    connectToADButton.Visible = false;
+                    disconnectADButton.Visible = true;
+
+                    List<string> ouresults = searchOU.SearchOrganizationalUnits(passwordTextbox.Text);
+
+                    if (ouresults.Count > 0)
+                    {
+                        OrganizationalUnits.Items.Clear();
+                        OrganizationalUnits.Items.AddRange(ouresults.ToArray());
+                        OrganizationalUnits.Visible = true;
+                    }
+
+
                 }
                 else
                 {
@@ -69,7 +99,8 @@ namespace WinFormAD
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                throw;
+                searchGroupBox.Visible = false;
+                connectedCheckBox.Checked = false;
             }
         }
 
@@ -78,6 +109,7 @@ namespace WinFormAD
             if (connectedCheckBox.Checked)
             {
                 searchGroupBox.Visible = true;
+
             }
             else
             {
@@ -103,7 +135,7 @@ namespace WinFormAD
                     updateNExtLoginCheckBox1.Enabled = false;
                     updateNaverExpCheckBox.Enabled = true;
                 }
-                else if(resultNextLogin) 
+                else if (resultNextLogin)
                 {
                     updateNExtLoginCheckBox1.Checked = resultNextLogin;
                     updateNaverExpCheckBox.Enabled = false;
@@ -113,6 +145,9 @@ namespace WinFormAD
                 {
                     updateNaverExpCheckBox.Enabled = true;
                     updateNExtLoginCheckBox1.Enabled = true;
+
+                    updateNaverExpCheckBox.Checked = resultNeverExpires;
+                    updateNExtLoginCheckBox1.Checked = resultNextLogin;
                 }
                 allstasuesarechekedNever = false;
                 allstasuesarechekedNext = false;
@@ -148,8 +183,6 @@ namespace WinFormAD
             {
                 allstasuesarechekedNext = false;
             }
-
-            
         }
 
         private void updateNaverExpCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -174,8 +207,45 @@ namespace WinFormAD
             {
                 allstasuesarechekedNever = false;
             }
-                
-            
+        }
+
+        private void disconnectADButton_Click(object sender, EventArgs e)
+        {
+            using (direntry)
+            {
+                direntry.Dispose();
+                MessageBox.Show("Disconnected");
+            }
+
+            System.Diagnostics.Process.Start(Application.ExecutablePath);
+            Application.Exit();
+        }
+
+        private void OrganizationalUnits_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ouUsersListBox.Items.Clear();
+
+            string ou = OrganizationalUnits.SelectedItem.ToString();
+
+            List<string> ouResult = searchOU.SearchMembersOfOrganizationalUnits(passwordTextbox.Text, ou);
+
+            if (ouResult.Count > 0)
+            {
+                ouUsersListBox.Items.AddRange(ouResult.ToArray());
+                ouUsersGroupBox.Visible = true;
+            }
+        }
+
+        private void ouUsersListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string user = ouUsersListBox.SelectedItem.ToString();
+
+            searchTextbox.Text = user;
+
+            if (serverTextbox.Text != "")
+            {
+                searchButton.PerformClick();
+            }
         }
     }
 }

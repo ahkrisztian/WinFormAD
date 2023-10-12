@@ -35,6 +35,7 @@ internal static class Program
         
 
         services.AddScoped<IEditUserPassword, EditUserPassword>();
+        services.AddScoped<ISearchOU,  SearchOU>();
         services.AddScoped<ISearchUserAD, SearchUserAD>();
 
         services.AddTransient<Form1>();

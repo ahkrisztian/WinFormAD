@@ -8,43 +8,46 @@ namespace WinFormDataAccess.Querys;
 public class SearchUserAD : ISearchUserAD
 {
     public string QueryUserAD(DirectoryEntry direntry, string queryusername)
-    {
-        
-        try
+    {      
+        using(direntry)
         {
-            DirectorySearcher search = new DirectorySearcher(direntry);
-
-            search.Filter = $"(samaccountname={queryusername})";
-
-            SearchResult? result = search.FindOne();
-
-            if (result is not null)
+            try
             {
-                string? displayName = result.Properties["displayName"][0].ToString();
+                DirectorySearcher search = new DirectorySearcher(direntry);
 
-                //var user = new UserAD();
+                search.Filter = $"(samaccountname={queryusername})";
 
-                //user.UserName = result.Properties["samaccountname"][0]?.ToString();
-                //user.DisplayName = result.Properties["displayname"][0]?.ToString();
-                //user.Email = result.Properties["mail"][0]?.ToString();
+                SearchResult? result = search.FindOne();
 
-                if (displayName is not null)
+                if (result is not null)
                 {
-                    return displayName;
+                    string? displayName = result.Properties["displayName"][0].ToString();
+
+                    //var user = new UserAD();
+
+                    //user.UserName = result.Properties["samaccountname"][0]?.ToString();
+                    //user.DisplayName = result.Properties["displayname"][0]?.ToString();
+                    //user.Email = result.Properties["mail"][0]?.ToString();
+
+                    if (displayName is not null)
+                    {
+                        return displayName;
+                    }
+                    else
+                    {
+                        return String.Empty;
+                    }
                 }
                 else
                 {
-                    return String.Empty;
+                    return "User does not exists";
                 }
             }
-            else
+            catch (Exception ex)
             {
-                return "User does not exists";
+                return "No result";
+                //throw new NullReferenceException("No result");
             }
-        }
-        catch (Exception ex)
-        {
-            throw new NullReferenceException(ex.Message);
         }
     }
 
