@@ -13,9 +13,9 @@ public class SearchUserAD : ISearchUserAD
     {
         this.dataAccess = dataAccess;
     }
-    public UserAD QueryUserAD(string queryusername)
+    public async Task<UserAD> QueryUserAD(string queryusername)
     {      
-        using(DirectoryEntry direntry = dataAccess.ConnectToAD())
+        using(DirectoryEntry direntry = await dataAccess.ConnectToAD())
         {
             try
             {

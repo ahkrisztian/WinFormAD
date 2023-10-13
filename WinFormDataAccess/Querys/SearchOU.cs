@@ -11,38 +11,43 @@ public class SearchOU : ISearchOU
         this.dataAccessAD = dataAccessAD;
     }
 
-    public List<string> SearchOrganizationalUnits()
+    public async Task<List<string>> SearchOrganizationalUnits()
     {
         try
         {
-            List<string> output = new List<string>();
-
-            using (DirectoryEntry entry = dataAccessAD.ConnectToAD())
+            List<string> result = await Task.Run(async () =>
             {
+                List<string> output = new List<string>();
 
-                DirectorySearcher searcher = new DirectorySearcher(entry);
-                searcher.Filter = "(objectClass=organizationalUnit)";
-
-                // Perform the search.
-                SearchResultCollection results = searcher.FindAll();
-
-                // Iterate through the search results to list the OUs.
-                foreach (SearchResult result in results)
+                using (DirectoryEntry entry = await dataAccessAD.ConnectToAD())
                 {
-                    DirectoryEntry ou = result.GetDirectoryEntry();
 
-                    output.Add(ou.Name);
-                }
+                    DirectorySearcher searcher = new DirectorySearcher(entry);
+                    searcher.Filter = "(objectClass=organizationalUnit)";
 
-                if (output.Count > 0)
-                {
-                    return output;
+                    // Perform the search.
+                    SearchResultCollection results = searcher.FindAll();
+
+                    // Iterate through the search results to list the OUs.
+                    foreach (SearchResult result in results)
+                    {
+                        DirectoryEntry ou = result.GetDirectoryEntry();
+
+                        output.Add(ou.Name);
+                    }
+
+                    if (output.Count > 0)
+                    {
+                        return output;
+                    }
+                    else
+                    {
+                        return new List<string> { };
+                    }
                 }
-                else
-                {
-                    return new List<string> { };
-                }
-            }
+            });
+
+            return result;
         }
         catch (Exception)
         {
@@ -50,41 +55,46 @@ public class SearchOU : ISearchOU
         }
     }
 
-    public List<string> SearchMembersOfOrganizationalUnits(string ou)
+    public async Task<List<string>> SearchMembersOfOrganizationalUnits(string ou)
     {
         try
         {
-            List<string> output = new List<string>();
-
-            using (DirectoryEntry entry = dataAccessAD.ConnectToAD())
+            List<string> result =  await Task.Run(async () =>
             {
-                string ouPath = $"LDAP://192.168.178.75/{ou},DC=SERVER2022,DC=de";
+                List<string> output = new List<string>();
 
-                entry.Path = ouPath;
-
-                DirectorySearcher searcher = new DirectorySearcher(entry);
-                searcher.Filter = "(objectClass=user)";
-
-                // Perform the search.
-                SearchResultCollection results = searcher.FindAll();
-
-                // Iterate through the search results to list the OUs.
-                foreach (SearchResult result in results)
+                using (DirectoryEntry entry = await dataAccessAD.ConnectToAD())
                 {
-                    DirectoryEntry ouusers = result.GetDirectoryEntry();
+                    string ouPath = $"LDAP://192.168.178.75/{ou},DC=SERVER2022,DC=de";
 
-                    output.Add(ouusers.Properties["samaccountname"].Value.ToString());
-                }
+                    entry.Path = ouPath;
 
-                if (output.Count > 0)
-                {
-                    return output;
+                    DirectorySearcher searcher = new DirectorySearcher(entry);
+                    searcher.Filter = "(objectClass=user)";
+
+                    // Perform the search.
+                    SearchResultCollection results = searcher.FindAll();
+
+                    // Iterate through the search results to list the OUs.
+                    foreach (SearchResult result in results)
+                    {
+                        DirectoryEntry ouusers = result.GetDirectoryEntry();
+
+                        output.Add(ouusers.Properties["samaccountname"].Value.ToString());
+                    }
+
+                    if (output.Count > 0)
+                    {
+                        return output;
+                    }
+                    else
+                    {
+                        return new List<string> { };
+                    }
                 }
-                else
-                {
-                    return new List<string> { };
-                }
-            }
+            });
+
+            return result;
         }
         catch (Exception)
         {

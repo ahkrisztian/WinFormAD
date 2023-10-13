@@ -30,7 +30,6 @@ internal static class Program
         services.AddSingleton<IConfiguration>(configuration);
 
         // Register your services
-        services.AddSingleton<IPrincipialContextDataAccess, PrincipialContextDataAccess>();
         services.AddSingleton<IDataAccessAD, DataAccessAD>();
         
 

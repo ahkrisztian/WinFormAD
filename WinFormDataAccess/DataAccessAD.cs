@@ -1,6 +1,5 @@
 ﻿using System.DirectoryServices;
 using System.Runtime.Versioning;
-using Microsoft.Extensions.Configuration;
 
 namespace WinFormDataAccess;
 
@@ -11,21 +10,26 @@ public class DataAccessAD : IDataAccessAD
     public string serverIp {  get; set; }
     public string userName { get; set; }
 
-    public DirectoryEntry ConnectToAD()
+    public async Task<DirectoryEntry> ConnectToAD()
     {
         try
         {
-            DirectoryEntry ldapConnection = new DirectoryEntry(serverIp, userName, passwordAdmin);
-
-            ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
-
-
-            if (ldapConnection is not null)
+            DirectoryEntry entry = await Task.Run(() =>
             {
-                return ldapConnection;
-            }
+                DirectoryEntry ldapConnection = new DirectoryEntry(serverIp, userName, passwordAdmin);
 
-            throw new InvalidOperationException("Can not connect to DirectoryEntry");
+                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+
+                if (ldapConnection is not null)
+                {
+                    return ldapConnection;
+                }
+
+                throw new InvalidOperationException("Can not connect to DirectoryEntry");
+            });
+
+            return entry;
         }
         catch (Exception)
         {

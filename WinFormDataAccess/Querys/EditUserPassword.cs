@@ -14,13 +14,13 @@ public class EditUserPassword : IEditUserPassword
         this.dataAccessAD = dataAccessAD;
     }
     //
-    public bool CheckPasswordNeverExpires(string queryusername)
+    public async Task<bool> CheckPasswordNeverExpires(string queryusername)
     {
-        using (DirectoryEntry direntry = dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
         {
             try
             {
-                DirectoryEntry userDistinguishedName = userDistingushedName(queryusername);
+                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername);
 
                 if (userDistinguishedName != null)
                 {
@@ -45,14 +45,14 @@ public class EditUserPassword : IEditUserPassword
             
     }
 
-    public bool CheckPasswordMustBeChangeNextLogin(string queryusername)
+    public async Task<bool> CheckPasswordMustBeChangeNextLogin(string queryusername)
     {
-        using (DirectoryEntry direntry = dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
         {
 
             try
             {
-                DirectoryEntry userDistinguishedName = userDistingushedName(queryusername);
+                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername);
 
                 // Get the current value of pwdLastSet
                 if (userDistinguishedName != null)
@@ -97,13 +97,13 @@ public class EditUserPassword : IEditUserPassword
 
     }
 
-    public string SetUserPasswordNextLogon(string queryusername, bool checkedCheckbox)
+    public async Task<string> SetUserPasswordNextLogon(string queryusername, bool checkedCheckbox)
     {
-        using (DirectoryEntry direntry = dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
         {
             try
             {
-                DirectoryEntry userDistinguishedName = userDistingushedName(queryusername);
+                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername);
 
                 if (userDistinguishedName is not null)
                 {
@@ -139,13 +139,13 @@ public class EditUserPassword : IEditUserPassword
             
     }
 
-    public string SetUserPasswordNeverExpires(string queryusername, bool checkedCheckbox)
+    public async Task<string> SetUserPasswordNeverExpires(string queryusername, bool checkedCheckbox)
     {
-        using (DirectoryEntry direntry = dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
         {
             try
             {
-                DirectoryEntry userDistinguishedName = userDistingushedName(queryusername);
+                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername);
 
                 if (userDistinguishedName is not null)
                 {
@@ -162,7 +162,7 @@ public class EditUserPassword : IEditUserPassword
                         // Commit the changes to Active Directory
                         userDistinguishedName.CommitChanges();
 
-                        if (CheckPasswordNeverExpires(queryusername))
+                        if (await CheckPasswordNeverExpires(queryusername))
                         {
                             return "User password never expires set to: True";
                         }
@@ -184,7 +184,7 @@ public class EditUserPassword : IEditUserPassword
                         // Commit the changes to Active Directory
                         userDistinguishedName.CommitChanges();
 
-                        if (!CheckPasswordNeverExpires(queryusername))
+                        if (!await CheckPasswordNeverExpires(queryusername))
                         {
                             return "User password never expires set to: False";
                         }
@@ -209,9 +209,9 @@ public class EditUserPassword : IEditUserPassword
         
     }
 
-    public string SetNewPassword(string username, string newPassword)
+    public async Task<string> SetNewPassword(string username, string newPassword)
     {
-        using (DirectoryEntry direntry = dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
         {
             try
             {
@@ -248,9 +248,9 @@ public class EditUserPassword : IEditUserPassword
         }
     }
 
-    private DirectoryEntry userDistingushedName(string queryusername)
+    private async Task<DirectoryEntry> userDistingushedName(string queryusername)
     {
-        using (DirectoryEntry direntry = dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
         {
             try
             {

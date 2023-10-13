@@ -45,11 +45,11 @@ namespace WinFormAD
 
         }
 
-        public void searchButton_Click(object sender, EventArgs e)
+        public async void searchButton_Click(object sender, EventArgs e)
         {
             try
             {
-                user = searchUserAD.QueryUserAD(searchTextbox.Text);
+                user = await searchUserAD.QueryUserAD(searchTextbox.Text);
 
                 if (user is not null)
                 {
@@ -73,12 +73,12 @@ namespace WinFormAD
             }
         }
 
-        private void connectToADButton_Click(object sender, EventArgs e)
+        private async void connectToADButton_Click(object sender, EventArgs e)
         {
             try
             {
                 dataAccessAD.SetThePassword(passwordTextbox.Text, serverTextbox.Text, nameTextbox.Text);
-                var result = dataAccessAD.ConnectToAD();
+                var result = await dataAccessAD.ConnectToAD();
 
                 if (result.NativeGuid is not null)
                 {
@@ -94,7 +94,7 @@ namespace WinFormAD
                     disconnectADButton.Visible = true;
 
 
-                    List<string> ouresults = searchOU.SearchOrganizationalUnits();
+                    List<string> ouresults = await searchOU.SearchOrganizationalUnits();
 
                     if (ouresults.Count > 0)
                     {
@@ -130,7 +130,7 @@ namespace WinFormAD
             }
         }
 
-        private void checkPasswordStatus()
+        private async void checkPasswordStatus()
         {
             allstasuesarechekedNever = true;
             allstasuesarechekedNext = true;
@@ -139,8 +139,8 @@ namespace WinFormAD
             {
                 userPassword = editUserPassword;
 
-                bool resultNeverExpires = userPassword.CheckPasswordNeverExpires(searchTextbox.Text);
-                bool resultNextLogin = userPassword.CheckPasswordMustBeChangeNextLogin(searchTextbox.Text);
+                bool resultNeverExpires = await userPassword.CheckPasswordNeverExpires(searchTextbox.Text);
+                bool resultNextLogin = await userPassword.CheckPasswordMustBeChangeNextLogin(searchTextbox.Text);
 
                 if (resultNeverExpires)
                 {
@@ -172,13 +172,13 @@ namespace WinFormAD
             }
         }
 
-        private void updateNExtLoginCheckBox1_CheckedChanged(object sender, EventArgs e)
+        private async void updateNExtLoginCheckBox1_CheckedChanged(object sender, EventArgs e)
         {
             if (!allstasuesarechekedNext)
             {
                 if (!updateNaverExpCheckBox.Checked)
                 {
-                    string result = userPassword.SetUserPasswordNextLogon(searchTextbox.Text, updateNExtLoginCheckBox1.Checked);
+                    string result = await userPassword.SetUserPasswordNextLogon(searchTextbox.Text, updateNExtLoginCheckBox1.Checked);
 
                     MessageBox.Show(result);
 
@@ -198,13 +198,13 @@ namespace WinFormAD
             }
         }
 
-        private void updateNaverExpCheckBox_CheckedChanged(object sender, EventArgs e)
+        private async void updateNaverExpCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (!allstasuesarechekedNever)
             {
                 if (!updateNExtLoginCheckBox1.Checked)
                 {
-                    string result = userPassword.SetUserPasswordNeverExpires(searchTextbox.Text, updateNaverExpCheckBox.Checked);
+                    string result = await userPassword.SetUserPasswordNeverExpires(searchTextbox.Text, updateNaverExpCheckBox.Checked);
 
                     MessageBox.Show(result);
                     checkPasswordStatus();
@@ -234,13 +234,13 @@ namespace WinFormAD
             Application.Exit();
         }
 
-        private void OrganizationalUnits_SelectedIndexChanged(object sender, EventArgs e)
+        private async void OrganizationalUnits_SelectedIndexChanged(object sender, EventArgs e)
         {
             ouUsersListBox.Items.Clear();
 
             string ou = OrganizationalUnits.SelectedItem.ToString();
 
-            List<string> ouResult = searchOU.SearchMembersOfOrganizationalUnits(ou);
+            var ouResult = await searchOU.SearchMembersOfOrganizationalUnits(ou);
 
             if (ouResult.Count > 0)
             {
@@ -282,9 +282,9 @@ namespace WinFormAD
             }
         }
 
-        private void setNewPWButton_Click(object sender, EventArgs e)
+        private async void setNewPWButton_Click(object sender, EventArgs e)
         {
-            string result = editUserPassword.SetNewPassword(searchTextbox.Text, confirmPasswordTextBox.Text);
+            string result = await editUserPassword.SetNewPassword(searchTextbox.Text, confirmPasswordTextBox.Text);
 
             MessageBox.Show(result);
 

@@ -4,10 +4,10 @@ namespace WinFormDataAccess.Querys;
 
 public interface IEditUserPassword
 {
-    string SetUserPasswordNextLogon(string queryusername, bool checkedCheckbox);
-    string SetUserPasswordNeverExpires(string queryusername, bool checkedCheckbox);
+    Task<string> SetUserPasswordNextLogon(string queryusername, bool checkedCheckbox);
+    Task<string> SetUserPasswordNeverExpires(string queryusername, bool checkedCheckbox);
 
-    string SetNewPassword(string username, string newPassword);
-    bool CheckPasswordNeverExpires(string queryusername);
-    bool CheckPasswordMustBeChangeNextLogin(string queryusername);
+    Task<string> SetNewPassword(string username, string newPassword);
+    Task<bool> CheckPasswordNeverExpires(string queryusername);
+    Task<bool> CheckPasswordMustBeChangeNextLogin(string queryusername);
 }

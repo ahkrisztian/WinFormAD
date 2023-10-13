@@ -4,6 +4,6 @@ namespace WinFormDataAccess.Querys
 {
     public interface ISearchUserAD
     {
-        UserAD QueryUserAD(string queryusername);
+        Task<UserAD> QueryUserAD(string queryusername);
     }
 }

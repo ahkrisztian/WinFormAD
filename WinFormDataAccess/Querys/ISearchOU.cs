@@ -2,8 +2,8 @@
 {
     public interface ISearchOU
     {
-        List<string> SearchOrganizationalUnits();
+        Task<List<string>> SearchOrganizationalUnits();
 
-        List<string> SearchMembersOfOrganizationalUnits(string ou);
+        Task<List<string>> SearchMembersOfOrganizationalUnits(string ou);
     }
 }
