@@ -44,14 +44,24 @@
             OrganizationalUnits = new ListBox();
             ouUsersGroupBox = new GroupBox();
             ouUsersListBox = new ListBox();
+            setNewPasswordGroupBox = new GroupBox();
+            setNewPWButton = new Button();
+            label1 = new Label();
+            newPWLabel = new Label();
+            confirmPasswordTextBox = new TextBox();
+            newPasswordTextBox = new TextBox();
+            ouGroupBox = new GroupBox();
+            userInfoButton = new Button();
             searchGroupBox.SuspendLayout();
             passwordGroupBox.SuspendLayout();
             ouUsersGroupBox.SuspendLayout();
+            setNewPasswordGroupBox.SuspendLayout();
+            ouGroupBox.SuspendLayout();
             SuspendLayout();
             // 
             // searchButton
             // 
-            searchButton.Location = new Point(200, 70);
+            searchButton.Location = new Point(259, 51);
             searchButton.Name = "searchButton";
             searchButton.Size = new Size(92, 21);
             searchButton.TabIndex = 0;
@@ -61,7 +71,7 @@
             // 
             // resultTextbox
             // 
-            resultTextbox.Location = new Point(41, 122);
+            resultTextbox.Location = new Point(98, 78);
             resultTextbox.Name = "resultTextbox";
             resultTextbox.Size = new Size(425, 23);
             resultTextbox.TabIndex = 1;
@@ -72,18 +82,18 @@
             nameTextbox.Name = "nameTextbox";
             nameTextbox.Size = new Size(425, 23);
             nameTextbox.TabIndex = 2;
-            nameTextbox.Text = "SERVER2022\\Administrator";
             // 
             // passwordTextbox
             // 
             passwordTextbox.Location = new Point(8, 70);
             passwordTextbox.Name = "passwordTextbox";
+            passwordTextbox.PasswordChar = 'X';
             passwordTextbox.Size = new Size(425, 23);
             passwordTextbox.TabIndex = 3;
             // 
             // searchTextbox
             // 
-            searchTextbox.Location = new Point(41, 35);
+            searchTextbox.Location = new Point(98, 22);
             searchTextbox.Name = "searchTextbox";
             searchTextbox.Size = new Size(425, 23);
             searchTextbox.TabIndex = 4;
@@ -94,7 +104,6 @@
             serverTextbox.Name = "serverTextbox";
             serverTextbox.Size = new Size(425, 23);
             serverTextbox.TabIndex = 5;
-            serverTextbox.Text = "LDAP://192.168.78.75";
             // 
             // connectToADButton
             // 
@@ -120,12 +129,13 @@
             // 
             // searchGroupBox
             // 
+            searchGroupBox.Controls.Add(userInfoButton);
             searchGroupBox.Controls.Add(searchTextbox);
             searchGroupBox.Controls.Add(searchButton);
             searchGroupBox.Controls.Add(resultTextbox);
-            searchGroupBox.Location = new Point(7, 169);
+            searchGroupBox.Location = new Point(8, 141);
             searchGroupBox.Name = "searchGroupBox";
-            searchGroupBox.Size = new Size(509, 158);
+            searchGroupBox.Size = new Size(596, 158);
             searchGroupBox.TabIndex = 8;
             searchGroupBox.TabStop = false;
             searchGroupBox.Text = "Search User";
@@ -134,7 +144,7 @@
             // updateNaverExpCheckBox
             // 
             updateNaverExpCheckBox.AutoSize = true;
-            updateNaverExpCheckBox.Location = new Point(24, 22);
+            updateNaverExpCheckBox.Location = new Point(76, 22);
             updateNaverExpCheckBox.Name = "updateNaverExpCheckBox";
             updateNaverExpCheckBox.Size = new Size(191, 19);
             updateNaverExpCheckBox.TabIndex = 9;
@@ -145,7 +155,7 @@
             // updateNExtLoginCheckBox1
             // 
             updateNExtLoginCheckBox1.AutoSize = true;
-            updateNExtLoginCheckBox1.Location = new Point(286, 22);
+            updateNExtLoginCheckBox1.Location = new Point(338, 22);
             updateNExtLoginCheckBox1.Name = "updateNExtLoginCheckBox1";
             updateNExtLoginCheckBox1.Size = new Size(216, 19);
             updateNExtLoginCheckBox1.TabIndex = 10;
@@ -168,9 +178,9 @@
             // 
             passwordGroupBox.Controls.Add(updateNaverExpCheckBox);
             passwordGroupBox.Controls.Add(updateNExtLoginCheckBox1);
-            passwordGroupBox.Location = new Point(7, 343);
+            passwordGroupBox.Location = new Point(8, 383);
             passwordGroupBox.Name = "passwordGroupBox";
-            passwordGroupBox.Size = new Size(509, 55);
+            passwordGroupBox.Size = new Size(596, 55);
             passwordGroupBox.TabIndex = 12;
             passwordGroupBox.TabStop = false;
             passwordGroupBox.Text = "Edit Password Credentials";
@@ -180,9 +190,9 @@
             // 
             OrganizationalUnits.FormattingEnabled = true;
             OrganizationalUnits.ItemHeight = 15;
-            OrganizationalUnits.Location = new Point(668, 12);
+            OrganizationalUnits.Location = new Point(6, 15);
             OrganizationalUnits.Name = "OrganizationalUnits";
-            OrganizationalUnits.Size = new Size(120, 79);
+            OrganizationalUnits.Size = new Size(141, 79);
             OrganizationalUnits.TabIndex = 13;
             OrganizationalUnits.Visible = false;
             OrganizationalUnits.SelectedIndexChanged += OrganizationalUnits_SelectedIndexChanged;
@@ -190,9 +200,9 @@
             // ouUsersGroupBox
             // 
             ouUsersGroupBox.Controls.Add(ouUsersListBox);
-            ouUsersGroupBox.Location = new Point(549, 169);
+            ouUsersGroupBox.Location = new Point(630, 141);
             ouUsersGroupBox.Name = "ouUsersGroupBox";
-            ouUsersGroupBox.Size = new Size(239, 229);
+            ouUsersGroupBox.Size = new Size(159, 229);
             ouUsersGroupBox.TabIndex = 14;
             ouUsersGroupBox.TabStop = false;
             ouUsersGroupBox.Text = "Users of OU";
@@ -204,17 +214,101 @@
             ouUsersListBox.ItemHeight = 15;
             ouUsersListBox.Location = new Point(6, 22);
             ouUsersListBox.Name = "ouUsersListBox";
-            ouUsersListBox.Size = new Size(227, 199);
+            ouUsersListBox.Size = new Size(147, 199);
             ouUsersListBox.TabIndex = 0;
             ouUsersListBox.SelectedIndexChanged += ouUsersListBox_SelectedIndexChanged;
+            // 
+            // setNewPasswordGroupBox
+            // 
+            setNewPasswordGroupBox.Controls.Add(setNewPWButton);
+            setNewPasswordGroupBox.Controls.Add(label1);
+            setNewPasswordGroupBox.Controls.Add(newPWLabel);
+            setNewPasswordGroupBox.Controls.Add(confirmPasswordTextBox);
+            setNewPasswordGroupBox.Controls.Add(newPasswordTextBox);
+            setNewPasswordGroupBox.Location = new Point(12, 315);
+            setNewPasswordGroupBox.Name = "setNewPasswordGroupBox";
+            setNewPasswordGroupBox.Size = new Size(592, 55);
+            setNewPasswordGroupBox.TabIndex = 15;
+            setNewPasswordGroupBox.TabStop = false;
+            setNewPasswordGroupBox.Text = "Set a new password";
+            setNewPasswordGroupBox.Visible = false;
+            // 
+            // setNewPWButton
+            // 
+            setNewPWButton.Location = new Point(531, 22);
+            setNewPWButton.Name = "setNewPWButton";
+            setNewPWButton.Size = new Size(55, 23);
+            setNewPWButton.TabIndex = 17;
+            setNewPWButton.Text = "Set";
+            setNewPWButton.UseVisualStyleBackColor = true;
+            setNewPWButton.Visible = false;
+            setNewPWButton.Click += setNewPWButton_Click;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(255, 25);
+            label1.Name = "label1";
+            label1.Size = new Size(110, 15);
+            label1.TabIndex = 3;
+            label1.Text = "Confirm password :";
+            // 
+            // newPWLabel
+            // 
+            newPWLabel.AutoSize = true;
+            newPWLabel.Location = new Point(6, 25);
+            newPWLabel.Name = "newPWLabel";
+            newPWLabel.Size = new Size(87, 15);
+            newPWLabel.TabIndex = 2;
+            newPWLabel.Text = "New password:";
+            // 
+            // confirmPasswordTextBox
+            // 
+            confirmPasswordTextBox.Location = new Point(369, 22);
+            confirmPasswordTextBox.Name = "confirmPasswordTextBox";
+            confirmPasswordTextBox.PasswordChar = 'X';
+            confirmPasswordTextBox.Size = new Size(150, 23);
+            confirmPasswordTextBox.TabIndex = 1;
+            confirmPasswordTextBox.TextChanged += confirmPasswordTextBox_TextChanged;
+            // 
+            // newPasswordTextBox
+            // 
+            newPasswordTextBox.Location = new Point(99, 22);
+            newPasswordTextBox.Name = "newPasswordTextBox";
+            newPasswordTextBox.PasswordChar = 'X';
+            newPasswordTextBox.Size = new Size(150, 23);
+            newPasswordTextBox.TabIndex = 0;
+            newPasswordTextBox.TextChanged += newPasswordTextBox_TextChanged;
+            // 
+            // ouGroupBox
+            // 
+            ouGroupBox.Controls.Add(OrganizationalUnits);
+            ouGroupBox.Location = new Point(630, 12);
+            ouGroupBox.Name = "ouGroupBox";
+            ouGroupBox.Size = new Size(153, 100);
+            ouGroupBox.TabIndex = 16;
+            ouGroupBox.TabStop = false;
+            ouGroupBox.Text = "Organizational Units";
+            ouGroupBox.Visible = false;
+            // 
+            // userInfoButton
+            // 
+            userInfoButton.Location = new Point(259, 107);
+            userInfoButton.Name = "userInfoButton";
+            userInfoButton.Size = new Size(92, 23);
+            userInfoButton.TabIndex = 17;
+            userInfoButton.Text = "User Info";
+            userInfoButton.UseVisualStyleBackColor = true;
+            userInfoButton.Click += userInfoButton_Click;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(ouGroupBox);
+            Controls.Add(setNewPasswordGroupBox);
             Controls.Add(ouUsersGroupBox);
-            Controls.Add(OrganizationalUnits);
             Controls.Add(passwordGroupBox);
             Controls.Add(disconnectADButton);
             Controls.Add(searchGroupBox);
@@ -230,6 +324,9 @@
             passwordGroupBox.ResumeLayout(false);
             passwordGroupBox.PerformLayout();
             ouUsersGroupBox.ResumeLayout(false);
+            setNewPasswordGroupBox.ResumeLayout(false);
+            setNewPasswordGroupBox.PerformLayout();
+            ouGroupBox.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -252,5 +349,13 @@
         private ListBox OrganizationalUnits;
         private GroupBox ouUsersGroupBox;
         private ListBox ouUsersListBox;
+        private GroupBox setNewPasswordGroupBox;
+        private Label label1;
+        private Label newPWLabel;
+        private TextBox confirmPasswordTextBox;
+        private TextBox newPasswordTextBox;
+        private GroupBox ouGroupBox;
+        private Button setNewPWButton;
+        private Button userInfoButton;
     }
 }

@@ -1,9 +1,9 @@
-﻿using System.DirectoryServices;
+﻿using WindiwsFormAdModels.UserModels;
 
 namespace WinFormDataAccess.Querys
 {
     public interface ISearchUserAD
     {
-        string QueryUserAD(DirectoryEntry direntry, string queryusername);
+        UserAD QueryUserAD(string queryusername);
     }
 }

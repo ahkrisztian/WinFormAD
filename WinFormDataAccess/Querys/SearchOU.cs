@@ -11,13 +11,13 @@ public class SearchOU : ISearchOU
         this.dataAccessAD = dataAccessAD;
     }
 
-    public List<string> SearchOrganizationalUnits(string password)
+    public List<string> SearchOrganizationalUnits()
     {
         try
         {
             List<string> output = new List<string>();
 
-            using (DirectoryEntry entry = dataAccessAD.ConnectToAD(password))
+            using (DirectoryEntry entry = dataAccessAD.ConnectToAD())
             {
 
                 DirectorySearcher searcher = new DirectorySearcher(entry);
@@ -50,13 +50,13 @@ public class SearchOU : ISearchOU
         }
     }
 
-    public List<string> SearchMembersOfOrganizationalUnits(string password, string ou)
+    public List<string> SearchMembersOfOrganizationalUnits(string ou)
     {
         try
         {
             List<string> output = new List<string>();
 
-            using (DirectoryEntry entry = dataAccessAD.ConnectToAD(password))
+            using (DirectoryEntry entry = dataAccessAD.ConnectToAD())
             {
                 string ouPath = $"LDAP://192.168.178.75/{ou},DC=SERVER2022,DC=de";
 

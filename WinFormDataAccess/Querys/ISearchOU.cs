@@ -2,8 +2,8 @@
 {
     public interface ISearchOU
     {
-        List<string> SearchOrganizationalUnits(string password);
+        List<string> SearchOrganizationalUnits();
 
-        List<string> SearchMembersOfOrganizationalUnits(string password, string ou);
+        List<string> SearchMembersOfOrganizationalUnits(string ou);
     }
 }

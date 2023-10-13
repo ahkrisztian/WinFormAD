@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Configuration;
 using System.DirectoryServices;
-using System.DirectoryServices.AccountManagement;
+using System.Text.RegularExpressions;
+using WindiwsFormAdModels.UserModels;
 using WinFormDataAccess;
 using WinFormDataAccess.Querys;
 
@@ -13,24 +15,33 @@ namespace WinFormAD
         bool allstasuesarechekedNever;
         bool allstasuesarechekedNext;
 
-        private readonly IPrincipialContextDataAccess principialContextDataAccess;
+        public UserAD user {  get; set; }
+        public string userName { get; set; }
+
         private readonly IDataAccessAD dataAccessAD;
+        private readonly IConfiguration configuration;
         private readonly ISearchUserAD searchUserAD;
         private readonly IEditUserPassword editUserPassword;
         private readonly ISearchOU searchOU;
 
-        public Form1(IDataAccessAD dataAccessAD,
+        public Form1(IDataAccessAD dataAccessAD, IConfiguration configuration,
                      ISearchUserAD searchUserAD,
                      IEditUserPassword editUserPassword, ISearchOU searchOU)
         {
             this.dataAccessAD = dataAccessAD;
+            this.configuration = configuration;
             this.searchUserAD = searchUserAD;
             this.editUserPassword = editUserPassword;
             this.searchOU = searchOU;
+
             InitializeComponent();
 
             updateNaverExpCheckBox.Click -= updateNaverExpCheckBox_CheckedChanged;
             updateNExtLoginCheckBox1.Click -= updateNExtLoginCheckBox1_CheckedChanged;
+
+            serverTextbox.Text = configuration["ActiveDirectory:Server"];
+            nameTextbox.Text = configuration["ActiveDirectory:Username"];
+
 
         }
 
@@ -38,15 +49,16 @@ namespace WinFormAD
         {
             try
             {
-                string result = searchUserAD.QueryUserAD(direntry, searchTextbox.Text);
+                user = searchUserAD.QueryUserAD(searchTextbox.Text);
 
-                if (result != "User does not exists")
+                if (user is not null)
                 {
-                    resultTextbox.Text = result;
+                    resultTextbox.Text = user.DisplayName;
 
                     checkPasswordStatus();
 
                     passwordGroupBox.Visible = true;
+                    setNewPasswordGroupBox.Visible = true;
 
                 }
                 else
@@ -65,7 +77,8 @@ namespace WinFormAD
         {
             try
             {
-                var result = dataAccessAD.ConnectToAD(passwordTextbox.Text);
+                dataAccessAD.SetThePassword(passwordTextbox.Text, serverTextbox.Text, nameTextbox.Text);
+                var result = dataAccessAD.ConnectToAD();
 
                 if (result.NativeGuid is not null)
                 {
@@ -80,15 +93,16 @@ namespace WinFormAD
                     connectToADButton.Visible = false;
                     disconnectADButton.Visible = true;
 
-                    List<string> ouresults = searchOU.SearchOrganizationalUnits(passwordTextbox.Text);
+
+                    List<string> ouresults = searchOU.SearchOrganizationalUnits();
 
                     if (ouresults.Count > 0)
                     {
                         OrganizationalUnits.Items.Clear();
                         OrganizationalUnits.Items.AddRange(ouresults.ToArray());
+                        ouGroupBox.Visible = true;
                         OrganizationalUnits.Visible = true;
                     }
-
 
                 }
                 else
@@ -109,7 +123,6 @@ namespace WinFormAD
             if (connectedCheckBox.Checked)
             {
                 searchGroupBox.Visible = true;
-
             }
             else
             {
@@ -126,8 +139,8 @@ namespace WinFormAD
             {
                 userPassword = editUserPassword;
 
-                bool resultNeverExpires = userPassword.CheckPasswordNeverExpires(direntry, searchTextbox.Text);
-                bool resultNextLogin = userPassword.CheckPasswordMustBeChangeNextLogin(direntry, searchTextbox.Text);
+                bool resultNeverExpires = userPassword.CheckPasswordNeverExpires(searchTextbox.Text);
+                bool resultNextLogin = userPassword.CheckPasswordMustBeChangeNextLogin(searchTextbox.Text);
 
                 if (resultNeverExpires)
                 {
@@ -165,7 +178,7 @@ namespace WinFormAD
             {
                 if (!updateNaverExpCheckBox.Checked)
                 {
-                    string result = userPassword.SetUserPasswordNextLogon(direntry, searchTextbox.Text, updateNExtLoginCheckBox1.Checked);
+                    string result = userPassword.SetUserPasswordNextLogon(searchTextbox.Text, updateNExtLoginCheckBox1.Checked);
 
                     MessageBox.Show(result);
 
@@ -191,7 +204,7 @@ namespace WinFormAD
             {
                 if (!updateNExtLoginCheckBox1.Checked)
                 {
-                    string result = userPassword.SetUserPasswordNeverExpires(direntry, searchTextbox.Text, updateNaverExpCheckBox.Checked);
+                    string result = userPassword.SetUserPasswordNeverExpires(searchTextbox.Text, updateNaverExpCheckBox.Checked);
 
                     MessageBox.Show(result);
                     checkPasswordStatus();
@@ -227,7 +240,7 @@ namespace WinFormAD
 
             string ou = OrganizationalUnits.SelectedItem.ToString();
 
-            List<string> ouResult = searchOU.SearchMembersOfOrganizationalUnits(passwordTextbox.Text, ou);
+            List<string> ouResult = searchOU.SearchMembersOfOrganizationalUnits(ou);
 
             if (ouResult.Count > 0)
             {
@@ -238,14 +251,58 @@ namespace WinFormAD
 
         private void ouUsersListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string user = ouUsersListBox.SelectedItem.ToString();
+            userName = ouUsersListBox.SelectedItem.ToString();
 
-            searchTextbox.Text = user;
+            searchTextbox.Text = userName;
 
             if (serverTextbox.Text != "")
             {
                 searchButton.PerformClick();
             }
+        }
+
+        private void confirmPasswordTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (newPasswordTextBox.Text == confirmPasswordTextBox.Text)
+            {
+                if (confirmPasswordTextBox.Text.Length >= 6
+                    && Regex.IsMatch(confirmPasswordTextBox.Text, "[a-z]")
+                    && Regex.IsMatch(confirmPasswordTextBox.Text, "[A-Z]")
+                    && Regex.IsMatch(confirmPasswordTextBox.Text, "[0-9]")
+                    && Regex.IsMatch(confirmPasswordTextBox.Text, "[!@#$%^&*()]"))
+                {
+                    setNewPWButton.Visible = true;
+
+                }
+                else
+                {
+                    MessageBox.Show("Password must contians: ");
+                }
+
+            }
+        }
+
+        private void setNewPWButton_Click(object sender, EventArgs e)
+        {
+            string result = editUserPassword.SetNewPassword(searchTextbox.Text, confirmPasswordTextBox.Text);
+
+            MessageBox.Show(result);
+
+            passwordGroupBox.Visible = false;
+            setNewPasswordGroupBox.Visible = false;
+
+            searchButton.PerformClick();
+
+        }
+
+        private void newPasswordTextBox_TextChanged(object sender, EventArgs e)
+        {
+            passwordGroupBox.Visible = false;
+        }
+
+        private void userInfoButton_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(user.ToString());
         }
     }
 }

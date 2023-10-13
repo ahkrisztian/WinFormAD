@@ -7,21 +7,15 @@ namespace WinFormDataAccess;
 [SupportedOSPlatform("windows")]
 public class DataAccessAD : IDataAccessAD
 {
-    private readonly IConfiguration configuration;
+    public string passwordAdmin { get; set; }
+    public string serverIp {  get; set; }
+    public string userName { get; set; }
 
-    public DataAccessAD(IConfiguration configuration)
+    public DirectoryEntry ConnectToAD()
     {
-        this.configuration = configuration;
-    }
-
-    public DirectoryEntry ConnectToAD(string password)
-    {
-        var server = configuration["ActiveDirectory:Server"];
-        var username = configuration["ActiveDirectory:Username"];
-
         try
         {
-            DirectoryEntry ldapConnection = new DirectoryEntry(server, username, password);
+            DirectoryEntry ldapConnection = new DirectoryEntry(serverIp, userName, passwordAdmin);
 
             ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
 
@@ -37,5 +31,12 @@ public class DataAccessAD : IDataAccessAD
         {
             throw new InvalidOperationException();
         }
+    }
+
+    public void SetThePassword(string password, string server, string user)
+    {
+        passwordAdmin = password;
+        serverIp = server;
+        userName = user;
     }
 }
