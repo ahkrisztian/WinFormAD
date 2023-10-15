@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Configuration;
+using Serilog;
 using System.DirectoryServices;
 using System.Text.RegularExpressions;
 using WindiwsFormAdModels.UserModels;
@@ -35,7 +36,6 @@ namespace WinFormAD
             this.searchUserAD = searchUserAD;
             this.editUserPassword = editUserPassword;
             this.searchOU = searchOU;
-
             InitializeComponent();
 
             updateNaverExpCheckBox.Click -= updateNaverExpCheckBox_CheckedChanged;
@@ -44,7 +44,7 @@ namespace WinFormAD
             serverTextbox.Text = configuration["ActiveDirectory:Server"];
             nameTextbox.Text = configuration["ActiveDirectory:Username"];
 
-
+            Log.Information("Hello");
         }
 
         public async void searchButton_Click(object sender, EventArgs e)
@@ -110,6 +110,7 @@ namespace WinFormAD
                 }
                 else
                 {
+                    Log.Warning("Connection Error by Connect to AD");
                     MessageBox.Show("Connection Error DirectoryEntry");
                 }
             }

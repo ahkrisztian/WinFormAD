@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using System.Runtime.Versioning;
 using WinFormDataAccess;
 using WinFormDataAccess.Querys;
@@ -7,20 +8,20 @@ using WinFormDataAccess.Querys;
 namespace WinFormAD;
 
 [SupportedOSPlatform("windows")]
-internal class Program
+public class Program
 {
-    /// <summary>
-    ///  The main entry point for the application.
-    /// </summary>
     [STAThread]
     static void Main()
     {
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
 
+
         // Build configuration
         var configuration = new ConfigurationBuilder()
+                                .SetBasePath(Directory.GetCurrentDirectory())
                                 .AddUserSecrets<Program>()
+                                .AddJsonFile("appsettings.json")
                                 .Build();
 
         // Create a service collection
@@ -30,13 +31,16 @@ internal class Program
 
         // Register your services
         services.AddSingleton<IDataAccessAD, DataAccessAD>();
-        
 
         services.AddScoped<IEditUserPassword, EditUserPassword>();
         services.AddScoped<ISearchOU,  SearchOU>();
         services.AddScoped<ISearchUserAD, SearchUserAD>();
 
         services.AddTransient<Form1>();
+
+        Log.Logger = new LoggerConfiguration()
+                        .ReadFrom.Configuration(configuration)
+                        .CreateLogger();
 
         // Build the service provider
         var serviceProvider = services.BuildServiceProvider();
