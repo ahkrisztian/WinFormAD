@@ -7,7 +7,7 @@ using WinFormDataAccess.Querys;
 namespace WinFormAD;
 
 [SupportedOSPlatform("windows")]
-internal static class Program
+internal class Program
 {
     /// <summary>
     ///  The main entry point for the application.
@@ -20,9 +20,8 @@ internal static class Program
 
         // Build configuration
         var configuration = new ConfigurationBuilder()
-            .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-            .AddJsonFile("C:\\Users\\Krisztian\\source\\repos\\WinFormAD\\WinFormAD\\appsettings.json")
-            .Build();
+                                .AddUserSecrets<Program>()
+                                .Build();
 
         // Create a service collection
         var services = new ServiceCollection();
