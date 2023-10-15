@@ -15,8 +15,10 @@ namespace WinFormAD
         bool allstasuesarechekedNever;
         bool allstasuesarechekedNext;
 
-        public UserAD user {  get; set; }
+        public UserAD user { get; set; }
         public string userName { get; set; }
+
+        private bool clearTextBoxPw { get; set; } = false;
 
         private readonly IDataAccessAD dataAccessAD;
         private readonly IConfiguration configuration;
@@ -60,6 +62,7 @@ namespace WinFormAD
                     passwordGroupBox.Visible = true;
                     setNewPasswordGroupBox.Visible = true;
 
+                    passWordLastSetLabel.Text = user.PassWordLastChanged;
                 }
                 else
                 {
@@ -263,23 +266,31 @@ namespace WinFormAD
 
         private void confirmPasswordTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (newPasswordTextBox.Text == confirmPasswordTextBox.Text)
+            if (!clearTextBoxPw)
             {
-                if (confirmPasswordTextBox.Text.Length >= 6
-                    && Regex.IsMatch(confirmPasswordTextBox.Text, "[a-z]")
-                    && Regex.IsMatch(confirmPasswordTextBox.Text, "[A-Z]")
-                    && Regex.IsMatch(confirmPasswordTextBox.Text, "[0-9]")
-                    && Regex.IsMatch(confirmPasswordTextBox.Text, "[!@#$%^&*()]"))
+                if (newPasswordTextBox.Text == confirmPasswordTextBox.Text)
                 {
-                    setNewPWButton.Visible = true;
+                    if (confirmPasswordTextBox.Text.Length >= 6
+                        && Regex.IsMatch(confirmPasswordTextBox.Text, "[a-z]")
+                        && Regex.IsMatch(confirmPasswordTextBox.Text, "[A-Z]")
+                        && Regex.IsMatch(confirmPasswordTextBox.Text, "[0-9]")
+                        && Regex.IsMatch(confirmPasswordTextBox.Text, "[!@#$%^&*()]"))
+                    {
+                        setNewPWButton.Visible = true;
+
+                    }
+                    else
+                    {
+                        MessageBox.Show("Password must contians: ");
+                    }
 
                 }
-                else
-                {
-                    MessageBox.Show("Password must contians: ");
-                }
-
             }
+            else
+            {
+                confirmPasswordTextBox.Clear();
+            }
+
         }
 
         private async void setNewPWButton_Click(object sender, EventArgs e)
@@ -293,11 +304,24 @@ namespace WinFormAD
 
             searchButton.PerformClick();
 
+            clearTextBoxPw = true;
+            confirmPasswordTextBox.Clear();
+            newPasswordTextBox.Clear();
+
         }
 
         private void newPasswordTextBox_TextChanged(object sender, EventArgs e)
         {
-            passwordGroupBox.Visible = false;
+            if (!clearTextBoxPw)
+            {
+                passwordGroupBox.Visible = false;
+            }
+            else
+            {
+                newPasswordTextBox.Clear();
+                clearTextBoxPw = false;
+            }
+
         }
 
         private void userInfoButton_Click(object sender, EventArgs e)

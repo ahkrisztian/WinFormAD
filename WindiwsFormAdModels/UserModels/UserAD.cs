@@ -20,6 +20,8 @@ namespace WindiwsFormAdModels.UserModels
         public DateTime whenCreated { get; set; }
         public DateTime whenUpdated { get; set; }
 
+        public string PassWordLastChanged { get; set; }
+
 
         public override string ToString()
         {
@@ -28,7 +30,8 @@ namespace WindiwsFormAdModels.UserModels
                 $"Display Name: {DisplayName}\n" +
                 $"Address: {Address}\n" +
                 $"Phonenumber: {PhoneNumber}\n" +
-                $"Account created at: {whenCreated}";
+                $"Account created at: {whenCreated}\n" +
+                $"Password last changed: {PassWordLastChanged}";
         }
     }
 }

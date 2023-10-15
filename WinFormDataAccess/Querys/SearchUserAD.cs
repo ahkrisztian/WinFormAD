@@ -27,6 +27,12 @@ public class SearchUserAD : ISearchUserAD
 
                 if (result is not null)
                 {
+                    DirectoryEntry userDirEntry = result.GetDirectoryEntry();
+
+                    IEditUserPassword editUserPassword = new EditUserPassword(dataAccess);
+
+                    string pwdate = editUserPassword.UserPasswordLastSetDateTime(userDirEntry);
+
                     string? displayName = result.Properties["displayName"][0].ToString();
 
                     var user = new UserAD();
@@ -45,6 +51,8 @@ public class SearchUserAD : ISearchUserAD
                     user.LastName = result.Properties["sn"][0].ToString();
 
                     user.whenCreated = (DateTime)result.Properties["whenCreated"][0];
+
+                    user.PassWordLastChanged = pwdate;
 
                     if (displayName is not null)
                     {

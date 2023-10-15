@@ -1,5 +1,6 @@
 ﻿using System;
 using System.DirectoryServices;
+using System.Globalization;
 using System.Runtime.Versioning;
 
 namespace WinFormDataAccess.Querys;
@@ -54,35 +55,19 @@ public class EditUserPassword : IEditUserPassword
             {
                 DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername);
 
-                // Get the current value of pwdLastSet
                 if (userDistinguishedName != null)
                 {
-                    object pwdLastSet = userDistinguishedName.Properties["pwdLastSet"].Value;
+                    long result = ReturnPasswordLastSetObject(userDistinguishedName);
 
-                    if (pwdLastSet != null)
+                    if (result == 0)
                     {
-                        // Use reflection to access the values
-                        var comType = pwdLastSet.GetType();
-
-                        int highPart = (int)comType.InvokeMember("HighPart", System.Reflection.BindingFlags.GetProperty, null, pwdLastSet, null);
-                        int lowPart = (int)comType.InvokeMember("LowPart", System.Reflection.BindingFlags.GetProperty, null, pwdLastSet, null);
-
-                        long pwdLastSetresult = ((long)highPart << 32) | (uint)lowPart;
-
-                        // Check if pwdLastSet is 0, which means the user must change their password at next login
-                        if (pwdLastSetresult == 0)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
+                        return true;
                     }
                     else
                     {
                         return false;
                     }
+
                 }
                 else { return false; }
 
@@ -209,6 +194,41 @@ public class EditUserPassword : IEditUserPassword
         
     }
 
+    public string UserPasswordLastSetDateTime(DirectoryEntry user)
+    {
+        try
+        {
+            if (user != null)
+            {
+                long pwLastSetDate = ReturnPasswordLastSetObject(user);
+
+                //if the last password set datetime = {1601. 01. 01. 0:00:00}
+                //the admin set the new password and the user must change it
+                //if the user change the password at the next logon the datetime will be a normal datetime like { 2023. 10. 15. 8:46:17 }
+                DateTime pwdLastSetDateTime = DateTime.FromFileTime(pwLastSetDate);
+
+                DateTime reference = DateTime.ParseExact("1601. 01. 01. 1:00:00", "yyyy. MM. dd. H:mm:ss", CultureInfo.InvariantCulture);
+
+                if (pwdLastSetDateTime != reference)
+                {
+                    return $"User password updated at: {pwdLastSetDateTime}";
+                }
+
+                return "User password updated by Admin and waiting to set by a User";
+            }
+            else
+            {
+                return "No result";
+            }
+        }
+        catch (Exception)
+        {
+            return "No result";
+        }
+
+            
+    }
+
     public async Task<string> SetNewPassword(string username, string newPassword)
     {
         using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
@@ -229,7 +249,8 @@ public class EditUserPassword : IEditUserPassword
                         user.Invoke("SetPassword", new object[] { newPassword });
                         user.Properties["pwdLastSet"].Value = 0;
                         user.CommitChanges();
-                        return "User password updated";
+
+                        return "User password updated by Admin and waiting to set by a User";
                     }
                     else
                     {
@@ -295,5 +316,32 @@ public class EditUserPassword : IEditUserPassword
             
     }
 
+    private long ReturnPasswordLastSetObject(DirectoryEntry userDistinguishedName)
+    {
+        long output = 0;
 
+        try
+        {
+            object pwdLastSet = userDistinguishedName.Properties["pwdLastSet"].Value;
+
+            if (pwdLastSet != null)
+            {
+                var comType = pwdLastSet.GetType();
+
+                int highPart = (int)comType.InvokeMember("HighPart", System.Reflection.BindingFlags.GetProperty, null, pwdLastSet, null);
+                int lowPart = (int)comType.InvokeMember("LowPart", System.Reflection.BindingFlags.GetProperty, null, pwdLastSet, null);
+
+                long pwdLastSetresult = ((long)highPart << 32) | (uint)lowPart;
+
+                output = pwdLastSetresult;
+
+                return output;
+            }
+            else { return output; }
+        }
+        catch (Exception)
+        {
+            return output;
+        }
+    }
 }
