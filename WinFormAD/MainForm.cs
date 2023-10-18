@@ -4,6 +4,7 @@ using System.DirectoryServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+using WindiwsFormAdModels.OUModel;
 using WindiwsFormAdModels.UserModels;
 using WinFormDataAccess;
 using WinFormDataAccess.Querys;
@@ -21,6 +22,7 @@ namespace WinFormAD
         public UserAD user { get; set; }
         public string userName { get; set; }
 
+        private List<OrganizationUnitModel> ouresults = new List<OrganizationUnitModel>();
         private bool clearTextBoxPw { get; set; } = false;
 
         private readonly IDataAccessAD dataAccessAD;
@@ -107,12 +109,15 @@ namespace WinFormAD
                     disconnectADButton.Visible = true;
 
 
-                    List<string> ouresults = await searchOU.SearchOrganizationalUnits(token);
+                    ouresults = await searchOU.SearchOrganizationalUnits(token);
 
                     if (ouresults.Count > 0)
                     {
                         OrganizationalUnits.Items.Clear();
-                        OrganizationalUnits.Items.AddRange(ouresults.ToArray());
+
+                        var ouNames = ouresults.Select(ou => ou.OUName).ToArray();
+
+                        OrganizationalUnits.Items.AddRange(ouNames);
                         ouGroupBox.Visible = true;
                         OrganizationalUnits.Visible = true;
                     }
@@ -266,7 +271,7 @@ namespace WinFormAD
 
             ouUsersListBox.Items.Clear();
 
-            string ou = OrganizationalUnits.SelectedItem.ToString();
+            OrganizationUnitModel ou = ouresults[OrganizationalUnits.SelectedIndex];
 
             var ouResult = await searchOU.SearchMembersOfOrganizationalUnits(ou, token);
 

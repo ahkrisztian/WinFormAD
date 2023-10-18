@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using System.DirectoryServices;
+using WindiwsFormAdModels.OUModel;
 
 namespace WinFormDataAccess.Querys;
 
@@ -12,14 +13,14 @@ public class SearchOU : ISearchOU
         this.dataAccessAD = dataAccessAD;
     }
 
-    public async Task<List<string>> SearchOrganizationalUnits(CancellationToken cancellationToken)
+    public async Task<List<OrganizationUnitModel>> SearchOrganizationalUnits(CancellationToken cancellationToken)
     {
+        List<OrganizationUnitModel> output = new List<OrganizationUnitModel>();
+
         try
         {
-            List<string> result = await Task.Run(async () =>
-            {
-                List<string> output = new List<string>();
-
+            await Task.Run(async () =>
+            {              
                 using (DirectoryEntry entry = await dataAccessAD.ConnectToAD(cancellationToken))
                 {
 
@@ -34,53 +35,49 @@ public class SearchOU : ISearchOU
                     {
                         DirectoryEntry ou = result.GetDirectoryEntry();
 
-                        output.Add(ou.Name);
-                    }
+                        OrganizationUnitModel organizationUnitModel = new OrganizationUnitModel();
 
-                    if (output.Count > 0)
-                    {
-                        return output;
-                    }
-                    else
-                    {
-                        return new List<string> { };
+                        organizationUnitModel.OUName = ou.Name;
+
+                        organizationUnitModel.OUAddress = ou.Path;
+
+                        output.Add(organizationUnitModel);
                     }
                 }
             });
 
-            return result;
+            return output;
         }
         catch (NullReferenceException ex)
         {
             Log.Error(ex.Message);
 
-            return new List<string> { };     
+            return new List<OrganizationUnitModel> { };     
 
             throw new NullReferenceException($"Null Reference Exception: {ex.Message}");
         }
     }
 
-    public async Task<List<string>> SearchMembersOfOrganizationalUnits(string ou, CancellationToken cancellationToken)
+    public async Task<List<string>> SearchMembersOfOrganizationalUnits(OrganizationUnitModel oumodel, CancellationToken cancellationToken)
     {
+        List<string> output = new List<string>();
+
         try
         {
-            List<string> result =  await Task.Run(async () =>
+            await Task.Run(async () =>
             {
-                List<string> output = new List<string>();
-
+               
                 using (DirectoryEntry entry = await dataAccessAD.ConnectToAD(cancellationToken))
                 {
-                    string ouPath = $"LDAP://192.168.178.75/{ou},DC=SERVER2022,DC=de";
-
-                    entry.Path = ouPath;
+                    entry.Path = oumodel.OUAddress;
 
                     DirectorySearcher searcher = new DirectorySearcher(entry);
                     searcher.Filter = "(objectClass=user)";
 
-                    // Perform the search.
+
                     SearchResultCollection results = searcher.FindAll();
 
-                    // Iterate through the search results to list the OUs.
+
                     foreach (SearchResult result in results)
                     {
                         DirectoryEntry ouusers = result.GetDirectoryEntry();
@@ -88,18 +85,10 @@ public class SearchOU : ISearchOU
                         output.Add(ouusers.Properties["samaccountname"].Value.ToString());
                     }
 
-                    if (output.Count > 0)
-                    {
-                        return output;
-                    }
-                    else
-                    {
-                        return new List<string> { };
-                    }
                 }
             });
 
-            return result;
+            return output;
         }
         catch (NullReferenceException ex)
         {

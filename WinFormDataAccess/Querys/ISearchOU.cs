@@ -1,9 +1,11 @@
-﻿namespace WinFormDataAccess.Querys
+﻿using WindiwsFormAdModels.OUModel;
+
+namespace WinFormDataAccess.Querys
 {
     public interface ISearchOU
     {
-        Task<List<string>> SearchOrganizationalUnits(CancellationToken cancellationToken);
+        Task<List<OrganizationUnitModel>> SearchOrganizationalUnits(CancellationToken cancellationToken);
 
-        Task<List<string>> SearchMembersOfOrganizationalUnits(string ou, CancellationToken cancellationToken);
+        Task<List<string>> SearchMembersOfOrganizationalUnits(OrganizationUnitModel oumodel, CancellationToken cancellationToken);
     }
 }
