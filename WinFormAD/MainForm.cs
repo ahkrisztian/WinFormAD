@@ -2,20 +2,22 @@ using Microsoft.Extensions.Configuration;
 using Serilog;
 using System.DirectoryServices;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Windows.Forms;
 using WindiwsFormAdModels.UserModels;
 using WinFormDataAccess;
 using WinFormDataAccess.Querys;
 
 namespace WinFormAD
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
-        private DirectoryEntry direntry;
         private IEditUserPassword userPassword;
 
         bool allstasuesarechekedNever;
         bool allstasuesarechekedNext;
 
+        private CancellationTokenSource cancelTokenSource;
         public UserAD user { get; set; }
         public string userName { get; set; }
 
@@ -27,7 +29,7 @@ namespace WinFormAD
         private readonly IEditUserPassword editUserPassword;
         private readonly ISearchOU searchOU;
 
-        public Form1(IDataAccessAD dataAccessAD, IConfiguration configuration,
+        public MainForm(IDataAccessAD dataAccessAD, IConfiguration configuration,
                      ISearchUserAD searchUserAD,
                      IEditUserPassword editUserPassword, ISearchOU searchOU)
         {
@@ -36,7 +38,9 @@ namespace WinFormAD
             this.searchUserAD = searchUserAD;
             this.editUserPassword = editUserPassword;
             this.searchOU = searchOU;
+
             InitializeComponent();
+
 
             updateNaverExpCheckBox.Click -= updateNaverExpCheckBox_CheckedChanged;
             updateNExtLoginCheckBox1.Click -= updateNExtLoginCheckBox1_CheckedChanged;
@@ -44,14 +48,16 @@ namespace WinFormAD
             serverTextbox.Text = configuration["ActiveDirectory:Server"];
             nameTextbox.Text = configuration["ActiveDirectory:Username"];
 
-            Log.Information("Hello");
         }
 
         public async void searchButton_Click(object sender, EventArgs e)
         {
             try
             {
-                user = await searchUserAD.QueryUserAD(searchTextbox.Text);
+                cancelTokenSource = new CancellationTokenSource();
+                CancellationToken token = cancelTokenSource.Token;
+
+                user = await searchUserAD.QueryUserAD(searchTextbox.Text, token);
 
                 if (user is not null)
                 {
@@ -80,13 +86,17 @@ namespace WinFormAD
         {
             try
             {
+                cancelTokenSource = new CancellationTokenSource();
+                CancellationToken token = cancelTokenSource.Token;
+
                 dataAccessAD.SetThePassword(passwordTextbox.Text, serverTextbox.Text, nameTextbox.Text);
-                var result = await dataAccessAD.ConnectToAD();
 
-                if (result.NativeGuid is not null)
+                DirectoryEntry connection = await dataAccessAD.ConnectToAD(token);
+
+                cancelButton.Visible = true;
+
+                if (connection.NativeGuid is not null && !cancelTokenSource.Token.IsCancellationRequested)
                 {
-                    direntry = result;
-
                     connectedCheckBox.Checked = true;
                     passwordTextbox.Enabled = false;
                     serverTextbox.Enabled = false;
@@ -97,7 +107,7 @@ namespace WinFormAD
                     disconnectADButton.Visible = true;
 
 
-                    List<string> ouresults = await searchOU.SearchOrganizationalUnits();
+                    List<string> ouresults = await searchOU.SearchOrganizationalUnits(token);
 
                     if (ouresults.Count > 0)
                     {
@@ -107,6 +117,13 @@ namespace WinFormAD
                         OrganizationalUnits.Visible = true;
                     }
 
+                    dataAccessAD.DisconnectAD(connection);
+                    cancelButton.Visible = false;
+                }
+                else if (cancelTokenSource.Token.IsCancellationRequested)
+                {
+                    cancelTokenSource.Dispose();
+                    MessageBox.Show("Cancelled");
                 }
                 else
                 {
@@ -143,8 +160,11 @@ namespace WinFormAD
             {
                 userPassword = editUserPassword;
 
-                bool resultNeverExpires = await userPassword.CheckPasswordNeverExpires(searchTextbox.Text);
-                bool resultNextLogin = await userPassword.CheckPasswordMustBeChangeNextLogin(searchTextbox.Text);
+                cancelTokenSource = new CancellationTokenSource();
+                CancellationToken token = cancelTokenSource.Token;
+
+                bool resultNeverExpires = await userPassword.CheckPasswordNeverExpires(searchTextbox.Text, token);
+                bool resultNextLogin = await userPassword.CheckPasswordMustBeChangeNextLogin(searchTextbox.Text, token);
 
                 if (resultNeverExpires)
                 {
@@ -182,7 +202,11 @@ namespace WinFormAD
             {
                 if (!updateNaverExpCheckBox.Checked)
                 {
-                    string result = await userPassword.SetUserPasswordNextLogon(searchTextbox.Text, updateNExtLoginCheckBox1.Checked);
+                    CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
+                    CancellationToken token = cancelTokenSource.Token;
+
+
+                    string result = await userPassword.SetUserPasswordNextLogon(searchTextbox.Text, updateNExtLoginCheckBox1.Checked, token);
 
                     MessageBox.Show(result);
 
@@ -208,7 +232,10 @@ namespace WinFormAD
             {
                 if (!updateNExtLoginCheckBox1.Checked)
                 {
-                    string result = await userPassword.SetUserPasswordNeverExpires(searchTextbox.Text, updateNaverExpCheckBox.Checked);
+                    CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
+                    CancellationToken token = cancelTokenSource.Token;
+
+                    string result = await userPassword.SetUserPasswordNeverExpires(searchTextbox.Text, updateNaverExpCheckBox.Checked, token);
 
                     MessageBox.Show(result);
                     checkPasswordStatus();
@@ -228,23 +255,20 @@ namespace WinFormAD
 
         private void disconnectADButton_Click(object sender, EventArgs e)
         {
-            using (direntry)
-            {
-                direntry.Dispose();
-                MessageBox.Show("Disconnected");
-            }
-
             System.Diagnostics.Process.Start(Application.ExecutablePath);
             Application.Exit();
         }
 
         private async void OrganizationalUnits_SelectedIndexChanged(object sender, EventArgs e)
         {
+            cancelTokenSource = new CancellationTokenSource();
+            CancellationToken token = cancelTokenSource.Token;
+
             ouUsersListBox.Items.Clear();
 
             string ou = OrganizationalUnits.SelectedItem.ToString();
 
-            var ouResult = await searchOU.SearchMembersOfOrganizationalUnits(ou);
+            var ouResult = await searchOU.SearchMembersOfOrganizationalUnits(ou, token);
 
             if (ouResult.Count > 0)
             {
@@ -296,7 +320,10 @@ namespace WinFormAD
 
         private async void setNewPWButton_Click(object sender, EventArgs e)
         {
-            string result = await editUserPassword.SetNewPassword(searchTextbox.Text, confirmPasswordTextBox.Text);
+            cancelTokenSource = new CancellationTokenSource();
+            CancellationToken token = cancelTokenSource.Token;
+
+            string result = await editUserPassword.SetNewPassword(searchTextbox.Text, confirmPasswordTextBox.Text, token);
 
             MessageBox.Show(result);
 
@@ -329,5 +356,58 @@ namespace WinFormAD
         {
             MessageBox.Show(user.ToString());
         }
+
+        private void cancelButton_Click(object sender, EventArgs e)
+        {
+            cancelTokenSource.Cancel();
+        }
+
+        private void closeLabel_Click(object sender, EventArgs e)
+        {
+
+            MessageBoxButtons buttons = MessageBoxButtons.YesNo;
+            string message = "Do you want to close the application?";
+            string title = "Exit";
+
+            DialogResult result = MessageBox.Show(message, title, buttons);
+
+            if (result == DialogResult.Yes)
+            {
+                Application.Exit();
+            }
+        }
+
+        private void closeLabel_MouseEnter(object sender, EventArgs e)
+        {
+            closeLabel.Font = new Font(closeLabel.Font, FontStyle.Bold);
+            closeLabel.ForeColor = Color.WhiteSmoke;
+            closeLabel.Cursor = Cursors.Hand;
+        }
+
+        private void closeLabel_MouseLeave(object sender, EventArgs e)
+        {
+            closeLabel.Font = new Font(closeLabel.Font, FontStyle.Bold);
+            closeLabel.ForeColor = SystemColors.ControlText;
+        }
+
+        private void minimizeLabel_Click(object sender, EventArgs e)
+        {
+            this.WindowState = FormWindowState.Minimized;
+        }
+
+        private void minimizeLabel_MouseEnter(object sender, EventArgs e)
+        {
+            minimizeLabel.Font = new Font(minimizeLabel.Font, FontStyle.Bold);
+            minimizeLabel.ForeColor = Color.WhiteSmoke;
+            minimizeLabel.Cursor = Cursors.Hand;
+        }
+
+        private void minimizeLabel_MouseLeave(object sender, EventArgs e)
+        {
+            minimizeLabel.Font = new Font(minimizeLabel.Font, FontStyle.Bold);
+            minimizeLabel.ForeColor = Color.Black;
+
+        }
     }
+
 }

@@ -36,7 +36,7 @@ public class Program
         services.AddScoped<ISearchOU,  SearchOU>();
         services.AddScoped<ISearchUserAD, SearchUserAD>();
 
-        services.AddTransient<Form1>();
+        services.AddTransient<MainForm>();
 
         Log.Logger = new LoggerConfiguration()
                         .ReadFrom.Configuration(configuration)
@@ -46,7 +46,7 @@ public class Program
         var serviceProvider = services.BuildServiceProvider();
 
         // Resolve the main form and pass the service provider to it
-        var mainForm = serviceProvider.GetRequiredService<Form1>();
+        var mainForm = serviceProvider.GetRequiredService<MainForm>();
 
         Application.Run(mainForm);
 

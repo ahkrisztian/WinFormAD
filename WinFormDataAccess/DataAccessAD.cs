@@ -11,29 +11,34 @@ public class DataAccessAD : IDataAccessAD
     public string? serverIp {  get; set; }
     public string? userName { get; set; }
 
-    public async Task<DirectoryEntry> ConnectToAD()
+    public async Task<DirectoryEntry> ConnectToAD(CancellationToken cancellationToken)
     {
         try
         {
-            return await Task.Run(() => 
-            {
-                DirectoryEntry ldapConnection = new DirectoryEntry(serverIp, userName, passwordAdmin);
+            DirectoryEntry ldapConnection = new DirectoryEntry(serverIp, userName, passwordAdmin);
+            ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
 
-                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+            cancellationToken.ThrowIfCancellationRequested();
 
-                return ldapConnection;
-            });
+            return await Task.FromResult(ldapConnection);
 
-                   
         }
-        catch (Exception ex)
+        catch (DirectoryServicesCOMException ex)
         {
             Log.Warning("Error Connect to AD {message}", ex.Message);
             throw new InvalidOperationException();
         }
+        catch(TaskCanceledException) { throw new TaskCanceledException(); }
 
     }
 
+    public void DisconnectAD(DirectoryEntry ldapConnection)
+    {
+        if (ldapConnection != null)
+        {
+            ldapConnection.Dispose();
+        }
+    }
     public void SetThePassword(string password, string server, string user)
     {
         passwordAdmin = password;

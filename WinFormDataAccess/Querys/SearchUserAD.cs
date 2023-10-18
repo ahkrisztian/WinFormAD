@@ -1,4 +1,5 @@
-﻿using System.DirectoryServices;
+﻿using Serilog;
+using System.DirectoryServices;
 using System.Runtime.Versioning;
 using WindiwsFormAdModels.UserModels;
 
@@ -13,17 +14,19 @@ public class SearchUserAD : ISearchUserAD
     {
         this.dataAccess = dataAccess;
     }
-    public async Task<UserAD> QueryUserAD(string queryusername)
+    public async Task<UserAD> QueryUserAD(string queryusername, CancellationToken cancellationToken)
     {      
-        using(DirectoryEntry direntry = await dataAccess.ConnectToAD())
+        using(DirectoryEntry direntry = await dataAccess.ConnectToAD(cancellationToken))
         {
             try
             {
                 DirectorySearcher search = new DirectorySearcher(direntry);
 
+                search.Asynchronous = true;
+
                 search.Filter = $"(samaccountname={queryusername})";
 
-                SearchResult? result = search.FindOne();
+                SearchResult? result =  search.FindOne();
 
                 if (result is not null)
                 {
@@ -68,10 +71,13 @@ public class SearchUserAD : ISearchUserAD
                     return null;
                 }
             }
-            catch (Exception ex)
+            catch (NullReferenceException ex)
             {
+                Log.Error(ex.Message);
+
                 return null;
-                //throw new NullReferenceException("No result");
+                
+                throw new NullReferenceException($"Null Reference Exception: {ex.Message}");
             }
         }
     }

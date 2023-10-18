@@ -2,6 +2,7 @@
 using System.DirectoryServices;
 using System.Globalization;
 using System.Runtime.Versioning;
+using System.Threading;
 
 namespace WinFormDataAccess.Querys;
 
@@ -15,13 +16,13 @@ public class EditUserPassword : IEditUserPassword
         this.dataAccessAD = dataAccessAD;
     }
     //
-    public async Task<bool> CheckPasswordNeverExpires(string queryusername)
+    public async Task<bool> CheckPasswordNeverExpires(string queryusername, CancellationToken cancellationToken)
     {
-        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD(cancellationToken))
         {
             try
             {
-                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername);
+                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername, cancellationToken);
 
                 if (userDistinguishedName != null)
                 {
@@ -46,14 +47,14 @@ public class EditUserPassword : IEditUserPassword
             
     }
 
-    public async Task<bool> CheckPasswordMustBeChangeNextLogin(string queryusername)
+    public async Task<bool> CheckPasswordMustBeChangeNextLogin(string queryusername, CancellationToken cancellationToken)
     {
-        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD(cancellationToken))
         {
 
             try
             {
-                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername);
+                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername, cancellationToken);
 
                 if (userDistinguishedName != null)
                 {
@@ -82,13 +83,13 @@ public class EditUserPassword : IEditUserPassword
 
     }
 
-    public async Task<string> SetUserPasswordNextLogon(string queryusername, bool checkedCheckbox)
+    public async Task<string> SetUserPasswordNextLogon(string queryusername, bool checkedCheckbox, CancellationToken cancellationToken)
     {
-        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD(cancellationToken))
         {
             try
             {
-                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername);
+                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername, cancellationToken);
 
                 if (userDistinguishedName is not null)
                 {
@@ -124,13 +125,13 @@ public class EditUserPassword : IEditUserPassword
             
     }
 
-    public async Task<string> SetUserPasswordNeverExpires(string queryusername, bool checkedCheckbox)
+    public async Task<string> SetUserPasswordNeverExpires(string queryusername, bool checkedCheckbox, CancellationToken cancellationToken)
     {
-        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD(cancellationToken))
         {
             try
             {
-                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername);
+                DirectoryEntry userDistinguishedName = await userDistingushedName(queryusername, cancellationToken);
 
                 if (userDistinguishedName is not null)
                 {
@@ -147,7 +148,7 @@ public class EditUserPassword : IEditUserPassword
                         // Commit the changes to Active Directory
                         userDistinguishedName.CommitChanges();
 
-                        if (await CheckPasswordNeverExpires(queryusername))
+                        if (await CheckPasswordNeverExpires(queryusername, cancellationToken))
                         {
                             return "User password never expires set to: True";
                         }
@@ -169,7 +170,7 @@ public class EditUserPassword : IEditUserPassword
                         // Commit the changes to Active Directory
                         userDistinguishedName.CommitChanges();
 
-                        if (!await CheckPasswordNeverExpires(queryusername))
+                        if (!await CheckPasswordNeverExpires(queryusername, cancellationToken))
                         {
                             return "User password never expires set to: False";
                         }
@@ -229,9 +230,9 @@ public class EditUserPassword : IEditUserPassword
             
     }
 
-    public async Task<string> SetNewPassword(string username, string newPassword)
+    public async Task<string> SetNewPassword(string username, string newPassword, CancellationToken cancellationToken)
     {
-        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD(cancellationToken))
         {
             try
             {
@@ -269,9 +270,9 @@ public class EditUserPassword : IEditUserPassword
         }
     }
 
-    private async Task<DirectoryEntry> userDistingushedName(string queryusername)
+    private async Task<DirectoryEntry> userDistingushedName(string queryusername, CancellationToken cancellationToken)
     {
-        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD())
+        using (DirectoryEntry direntry = await dataAccessAD.ConnectToAD(cancellationToken))
         {
             try
             {

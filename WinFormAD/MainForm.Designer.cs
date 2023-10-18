@@ -1,6 +1,6 @@
 ﻿namespace WinFormAD
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -53,6 +53,9 @@
             confirmPasswordTextBox = new TextBox();
             newPasswordTextBox = new TextBox();
             ouGroupBox = new GroupBox();
+            cancelButton = new Button();
+            closeLabel = new Label();
+            minimizeLabel = new Label();
             searchGroupBox.SuspendLayout();
             passwordGroupBox.SuspendLayout();
             ouUsersGroupBox.SuspendLayout();
@@ -120,7 +123,7 @@
             // 
             connectedCheckBox.AutoSize = true;
             connectedCheckBox.Enabled = false;
-            connectedCheckBox.Location = new Point(211, 99);
+            connectedCheckBox.Location = new Point(140, 99);
             connectedCheckBox.Name = "connectedCheckBox";
             connectedCheckBox.Size = new Size(117, 19);
             connectedCheckBox.TabIndex = 7;
@@ -211,7 +214,7 @@
             // ouUsersGroupBox
             // 
             ouUsersGroupBox.Controls.Add(ouUsersListBox);
-            ouUsersGroupBox.Location = new Point(630, 141);
+            ouUsersGroupBox.Location = new Point(630, 245);
             ouUsersGroupBox.Name = "ouUsersGroupBox";
             ouUsersGroupBox.Size = new Size(159, 229);
             ouUsersGroupBox.TabIndex = 14;
@@ -305,7 +308,7 @@
             // ouGroupBox
             // 
             ouGroupBox.Controls.Add(OrganizationalUnits);
-            ouGroupBox.Location = new Point(630, 12);
+            ouGroupBox.Location = new Point(630, 142);
             ouGroupBox.Name = "ouGroupBox";
             ouGroupBox.Size = new Size(153, 100);
             ouGroupBox.TabIndex = 16;
@@ -313,11 +316,53 @@
             ouGroupBox.Text = "Organizational Units";
             ouGroupBox.Visible = false;
             // 
-            // Form1
+            // cancelButton
+            // 
+            cancelButton.Location = new Point(284, 99);
+            cancelButton.Name = "cancelButton";
+            cancelButton.Size = new Size(75, 23);
+            cancelButton.TabIndex = 17;
+            cancelButton.Text = "Cancel";
+            cancelButton.UseVisualStyleBackColor = true;
+            cancelButton.Visible = false;
+            cancelButton.Click += cancelButton_Click;
+            // 
+            // closeLabel
+            // 
+            closeLabel.AutoSize = true;
+            closeLabel.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point);
+            closeLabel.Location = new Point(769, 9);
+            closeLabel.Name = "closeLabel";
+            closeLabel.Size = new Size(20, 21);
+            closeLabel.TabIndex = 18;
+            closeLabel.Text = "X";
+            closeLabel.Click += closeLabel_Click;
+            closeLabel.MouseEnter += closeLabel_MouseEnter;
+            closeLabel.MouseLeave += closeLabel_MouseLeave;
+            // 
+            // minimizeLabel
+            // 
+            minimizeLabel.AutoSize = true;
+            minimizeLabel.Font = new Font("Segoe UI Black", 14.25F, FontStyle.Bold, GraphicsUnit.Point);
+            minimizeLabel.Location = new Point(743, 2);
+            minimizeLabel.Name = "minimizeLabel";
+            minimizeLabel.Size = new Size(20, 25);
+            minimizeLabel.TabIndex = 19;
+            minimizeLabel.Text = "_";
+            minimizeLabel.Click += minimizeLabel_Click;
+            minimizeLabel.MouseEnter += minimizeLabel_MouseEnter;
+            minimizeLabel.MouseLeave += minimizeLabel_MouseLeave;
+            // 
+            // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackColor = SystemColors.ControlDark;
             ClientSize = new Size(800, 486);
+            ControlBox = false;
+            Controls.Add(minimizeLabel);
+            Controls.Add(closeLabel);
+            Controls.Add(cancelButton);
             Controls.Add(ouGroupBox);
             Controls.Add(setNewPasswordGroupBox);
             Controls.Add(ouUsersGroupBox);
@@ -329,8 +374,9 @@
             Controls.Add(serverTextbox);
             Controls.Add(passwordTextbox);
             Controls.Add(nameTextbox);
-            Name = "Form1";
-            Text = "Form1";
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            Name = "MainForm";
+            Text = "Active Directory Editor";
             searchGroupBox.ResumeLayout(false);
             searchGroupBox.PerformLayout();
             passwordGroupBox.ResumeLayout(false);
@@ -370,5 +416,8 @@
         private Button setNewPWButton;
         private Button userInfoButton;
         private Label passWordLastSetLabel;
+        private Button cancelButton;
+        private Label closeLabel;
+        private Label minimizeLabel;
     }
 }
